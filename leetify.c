@@ -63,7 +63,7 @@ void execute_pipeline(struct command_line *cmds)
     // printf("SIZEOF COMMANDLINE[3]:\t%d\n", num_of_commands);
 
     for (int i = 0; i < num_of_commands; i++) {
-        printf("COMMANDS:%s\n", cmds + i);
+        
         int success = run_process(cmds + i);
 
         if (success == -1) {
