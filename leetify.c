@@ -78,7 +78,7 @@ int run_process(struct command_line *cmds)
    if (cmds->stdout_pipe == false) {
        if (cmds->stdout_file != NULL) {
      
-           int open_flags = O_RDWR | OCREAT | O_TRUNC;
+           int open_flags = O_RDWR | O_CREAT | O_TRUNC;
            int open_perms = 0666;
            int fd = open(cmds->stdout_file, open_flags, open_perms);
 
