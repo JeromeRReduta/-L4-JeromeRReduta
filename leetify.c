@@ -63,7 +63,7 @@ void execute_pipeline(struct command_line *cmds)
 
     for (int i = 0; i < num_of_commands; i++) {
         printf("COMMANDS:%s\n", cmds + i);
-        int success = run_process((cmds + i));
+        int success = run_process(cmds + i);
 
         if (success == -1) {
             return;
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 
     char *command1[] = { "cat", input_file, (char *) NULL };
     char *command2[] = { "tr", "[:upper:]", "[:lower:]", (char *) NULL };
-    char *command3[] = { "sed", output_file, (char *) NULL };
+    char *command3[] = { "sed", 's|the|teh|g; s|a|4|g; s|e|3|g; s|i|!|g; s|l|1|g; s|o|0|g; s|s|5|g;', (char *) NULL };
 
 
     // Show command line as struct
@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
 
     cmds[2].tokens = command3;
     cmds[2].stdout_pipe = false;
-    cmds[2].stdout_file = NULL;
+    cmds[2].stdout_file = output_file;
 
 
     execute_pipeline(cmds);
