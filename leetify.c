@@ -1,11 +1,20 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 struct command_line {
     char **tokens;
     bool stdout_pipe;
     char *stdout_file;
 };
+
+/* Function prototypes */
+int run_process(struct command_line *cmds);
 
 void execute_pipeline(struct command_line *cmds)
 {
@@ -48,6 +57,73 @@ void execute_pipeline(struct command_line *cmds)
      * If you created a handler process in main(), then it will be replaced by
      * this last call to execvp.
      */
+
+    int num_of_commands = sizeof(struct command_line) / sizeof(cmds);
+    printf("SIZEOF COMMANDLINE[3]:\t%d\n", num_of_commands);
+
+    for (int i = 0; i < num_of_commands; i++) {
+        int success = run_process((cmds + i));
+
+        if (success == -1) {
+            return;
+        }
+    }
+  
+        
+
+}
+
+int run_process(struct command_line *cmds)
+{
+   if (cmds->stdout_pipe == false) {
+       if (cmds->stdout_file != NULL) {
+     
+           int open_flags = O_RDWR | OCREAT | O_TRUNC;
+           int open_perms = 0666;
+           int fd = open(cmds->stdout_file, open_flags, open_perms);
+
+           if (fd == -1) {
+               perror("open");
+               return -1;
+           }
+           dup2(fd, STDOUT_FILENO);
+       }
+
+       if (execvp(cmds->tokens[0], cmds->tokens) == -1) {
+           perror("execvp");
+           return -1;
+       }
+   }
+   
+    // Create new pipe
+    int fd[2];
+
+    if (pipe (fd) == -1) {
+         return -1;
+     }
+
+    pid_t child = fork();
+
+    
+    if (child == -1) {
+        perror("fork");
+        return -1;
+    }
+    // Child case - execute program
+    else if (child == 0) {
+        printf("DOING STUFF:\n");
+        dup2(fd[1], STDIN_FILENO);
+        close(fd[0]);
+        execvp(cmds->tokens[0], cmds->tokens);
+    }
+    else {
+        // Parent
+        dup2(fd[0], STDIN_FILENO);
+        close(fd[1]);
+    }
+
+    return 0;
+
 }
 
 int main(int argc, char *argv[])
@@ -72,22 +148,29 @@ int main(int argc, char *argv[])
      *   wait for the handler to finish
      */
 
-    // TODO: These commands aren't quite finished...
-    char *command1[] = { "cat", "file.txt", (char *) NULL };
+    char *command1[] = { "cat", input_file, (char *) NULL };
     char *command2[] = { "tr", "[:upper:]", "[:lower:]", (char *) NULL };
-    char *command3[] = { "sed", "s|CATS|MEOW|g", (char *) NULL };
+    char *command3[] = { "sed", output_file, (char *) NULL };
 
+
+    // Show command line as struct
     struct command_line cmds[3] = { 0 };
     cmds[0].tokens = command1;
     cmds[0].stdout_pipe = true;
     cmds[0].stdout_file = NULL;
 
     cmds[1].tokens = command2;
-    /* TODO: Finish filling these in ... */
+    cmds[1].stdout_pipe = true;
+    cmds[1].stdout_file = NULL;
 
-    cmds[2].stdout_pipe = false; /* Last command so set stdout_pipe = false */
+    cmds[2].tokens = command3;
+    cmds[2].stdout_pipe = false;
+    cmds[2].stdout_file = NULL;
+
 
     execute_pipeline(cmds);
 
     return 0;
 }
+
+
