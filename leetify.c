@@ -112,7 +112,7 @@ int run_process(struct command_line *cmds)
     // Child case - execute program
     else if (child == 0) {
         printf("DOING STUFF:\n");
-        dup2(fd[1], STDIN_FILENO);
+        dup2(fd[1], STDOUT_FILENO);
         close(fd[0]);
         execvp(cmds->tokens[0], cmds->tokens);
     }
