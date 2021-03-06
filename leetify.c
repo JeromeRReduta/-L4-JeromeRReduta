@@ -62,6 +62,7 @@ void execute_pipeline(struct command_line *cmds)
     printf("SIZEOF COMMANDLINE[3]:\t%d\n", num_of_commands);
 
     for (int i = 0; i < num_of_commands; i++) {
+        printf("COMMANDS:%s\n", cmds + i);
         int success = run_process((cmds + i));
 
         if (success == -1) {
@@ -150,8 +151,7 @@ int main(int argc, char *argv[])
 
     char *command1[] = { "cat", input_file, (char *) NULL };
     char *command2[] = { "tr", "[:upper:]", "[:lower:]", (char *) NULL };
-    char *leet = "s|the|teh|g; s|a|4|g; s|e|3|g; s|i|!|g; s|l|1|g; s|o|0|g; s|s|5|g";
-    char *command3[] = { "sed", output_file,  leet};
+    char *command3[] = { "sed", output_file, (char *) NULL };
 
 
     // Show command line as struct
