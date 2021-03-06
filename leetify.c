@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 
     char *command1[] = { "cat", input_file, (char *) NULL };
     char *command2[] = { "tr", "[:upper:]", "[:lower:]", (char *) NULL };
-    char *command3[] = { "sed", output_file, (char *) NULL };
+    char *command3[] = { "sed", output_file, 's|the|teh|g; s|a|4|g; s|e|3|g; s|i|!|g; s|l|1|g; s|o|0|g; s|s|5|g;' };
 
 
     // Show command line as struct
