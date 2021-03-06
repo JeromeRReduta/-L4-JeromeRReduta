@@ -15,6 +15,7 @@ struct command_line {
 
 /* Function prototypes */
 int run_process(struct command_line *cmds);
+void set_command_line(struct command_line *cmd, char **tokens, bool stdout_pipe, char *stdout_file);
 
 void execute_pipeline(struct command_line *cmds)
 {
@@ -59,7 +60,7 @@ void execute_pipeline(struct command_line *cmds)
      */
 
     int num_of_commands = sizeof(struct command_line) / sizeof(cmds);
-    printf("SIZEOF COMMANDLINE[3]:\t%d\n", num_of_commands);
+    // printf("SIZEOF COMMANDLINE[3]:\t%d\n", num_of_commands);
 
     for (int i = 0; i < num_of_commands; i++) {
         printf("COMMANDS:%s\n", cmds + i);
@@ -74,6 +75,7 @@ void execute_pipeline(struct command_line *cmds)
 
 }
 
+// A lot of this lovingly adapted from lab code
 int run_process(struct command_line *cmds)
 {
    if (cmds->stdout_pipe == false) {
@@ -112,7 +114,6 @@ int run_process(struct command_line *cmds)
     }
     // Child case - execute program
     else if (child == 0) {
-        printf("DOING STUFF:\n");
         dup2(fd[1], STDOUT_FILENO);
         close(fd[0]);
         execvp(cmds->tokens[0], cmds->tokens);
@@ -153,26 +154,26 @@ int main(int argc, char *argv[])
     char *command2[] = { "tr", "[:upper:]", "[:lower:]", (char *) NULL };
     char *leet = "s|the|teh|g; s|a|4|g; s|e|3|g; s|i|!|g; s|l|1|g; s|o|0|g; s|s|5|g;";
     char *command3[] = { "sed", leet, (char *) NULL };
-
-
-    // Show command line as struct
     struct command_line cmds[3] = { 0 };
-    cmds[0].tokens = command1;
-    cmds[0].stdout_pipe = true;
-    cmds[0].stdout_file = NULL;
 
-    cmds[1].tokens = command2;
-    cmds[1].stdout_pipe = true;
-    cmds[1].stdout_file = NULL;
+    set_command_line(&(cmds[0]), command1, true, NULL);
+    set_command_line(&(cmds[1]), command2, true, NULL);
+    set_command_line(&(cmds[2]), command3, false, output_file);
 
-    cmds[2].tokens = command3;
-    cmds[2].stdout_pipe = false;
-    cmds[2].stdout_file = output_file;
+   
 
 
     execute_pipeline(cmds);
 
     return 0;
 }
+
+void set_command_line(struct command_line *cmd, char **tokens, bool stdout_pipe, char *stdout_file)
+{
+    cmd->tokens = tokens;
+    cmd->stdout_pipe = stdout_pipe;
+    cmd->stdout_file = stdout_file;
+}
+
 
 
