@@ -21,19 +21,21 @@ int timer = 15;
 
 /* Function prototypes: */
 void init_signals();
+
 void sigint_handler(int signo);
-void finish_countdown();
-void reset_count();
+void sigalrm_handler(int signo);
+void sigquit_handler(int signo);
+void sigusr1_handler(int signo);
+
 void increase_count_by(int num);
 
 // Initializes the signals
 void init_signals()
 {
     signal(SIGINT, sigint_handler);
-    signal(SIGALRM, sigint_handler);
-    signal(SIGQUIT, sigint_handler);
-    // Got these 2 lines of code from https://linuxhint.com/sigalarm_alarm_c_language/
-    signal(SIGUSR1, sigint_handler);
+    signal(SIGALRM, sigalrm_handler);
+    signal(SIGQUIT, sigquit_handler);
+    signal(SIGUSR1, sigusr1_handler);
 }
 
 // Handles inputted signals
@@ -41,43 +43,38 @@ void sigint_handler(int signo)
 {
     printf("\n");
 
-    switch(signo) {
-        // End program
-        case SIGINT:
-            finish_countdown();
-            break;
-
-        // Reset count
-        case SIGALRM:
-            reset_count();
-            break;
-
-        // Increment count by 5
-        case SIGQUIT:
-            increase_count_by(5);
-            break;
-
-        // Increment count by 10
-        case SIGUSR1:
-            increase_count_by(10);
-            break;
+    if (signo == SIGINT) {
+        printf("Final count is: %ld\n", count);
+        printf("Goodbye!\n");
+        exit(0);
     }
 }
 
-// Completes countdown and exits program
-void finish_countdown()
+void sigalrm_handler(int signo)
 {
-    printf("Final count is: %ld\n", count);
-    printf("Goodbye!\n");
-    exit(0);
+    printf("\n");
+
+    if (signo == SIGALRM) {
+        printf("Resetting count!\n");
+        count = 0;
+        alarm(timer);
+    }
 }
 
-// Resets count
-void reset_count()
+void sigquit_handler(int signo)
 {
-    printf("Resetting count!\n");
-    count = 0;
-    alarm(timer);
+    printf("\n");
+    if (signo == SIGQUIT) {
+        increase_count_by(5);
+    }
+}
+
+void sigusr1_handler(int signo)
+{
+    printf("\n");
+    if (signo == SIGUSR1) {
+        increase_count_by(10);
+    }
 }
 
 // Increases count by num
